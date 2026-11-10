@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ScopePay Review</title>
+  <meta name="description" content="Check the evidence behind a software milestone before you release escrow.">
+  <link rel="icon" href="/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" type="module"></script>
+</head>
+<body>
+  <header class="top">
+    <div class="frame top-inner">
+      <a class="brand" href="/"><img src="/mark.svg" width="32" height="32" alt=""><span>ScopePay <strong>Review</strong></span></a>
+      <a class="external" href="https://scopepay-arbitrum.vercel.app/" target="_blank" rel="noopener">Open escrow ↗</a>
+    </div>
+  </header>
+
+  <main class="frame">
+    <div class="heading">
+      <h1>Check the release<br class="wide-break"> before you pay.</h1>
+      <p>Turn agreed scope into an evidence checklist. Verify the freelancer’s exact GitHub release before you make the payout decision.</p>
+    </div>
+    <div class="workspace">
+      <section class="intake" aria-labelledby="submission-title">
+        <div class="section-heading">
+          <h2 id="submission-title">Milestone submission</h2>
+          <span id="serv-status" class="engine">Checking SERV…</span>
+        </div>
+        <div class="examples" role="group" aria-label="Examples">
+          <button type="button" id="complete-example" aria-pressed="true">Complete release</button>
+          <button type="button" id="missing-example" aria-pressed="false">Missing attachment</button>
+        </div>
+
+        <form id="review-form">
+          <label for="repository">Agreed repository</label>
+          <input id="repository" placeholder="owner/repo" maxlength="140" autocomplete="off" required>
+          <label for="release">Submitted release</label>
+          <input id="release" type="url" placeholder="https://github.com/owner/repo/releases/tag/v1.2.3" maxlength="500" required>
+          <div class="criteria-label"><label for="criteria">Acceptance criteria</label><span>One requirement per line</span></div>
+          <textarea id="criteria" maxlength="1800" rows="4" spellcheck="false" required></textarea>
+          <p class="hint">Use exact filenames and GitHub Actions check names where possible.</p>
+
+          <details class="binding">
+            <summary>Link a ScopePay milestone</summary>
+            <p class="hint">On ScopePay v2, the freelancer’s delivery note should contain the release URL on line one and the full commit SHA on line two.</p>
+            <div class="binding-fields">
+              <div><label for="deal">Deal number</label><input id="deal" type="number" min="0" step="1" placeholder="6"></div>
+              <div><label for="milestone">Milestone</label><input id="milestone" type="number" min="1" max="12" step="1" value="1"></div>
+            </div>
+          </details>
+
+          <div class="intake-actions">
+            <button id="plan-button" class="button quiet" type="button">Build checklist with SERV</button>
+            <button id="review-button" class="button primary" type="submit" disabled>Check release</button>
+          </div>
+          <p id="error" class="message" role="alert" hidden></p>
+        </form>
+      </section>
+
+      <section class="receipt" aria-labelledby="receipt-title">
+        <div class="receipt-head">
+          <div>
+            <h2 id="receipt-title">Review receipt</h2>
+            <p id="plan-source">Example checklist</p>
+          </div>
+          <svg class="receipt-icon" viewBox="0 0 28 32" aria-hidden="true" fill="none">
+            <path d="M5 2h18v27l-3-2-3 2-3-2-3 2-3-2-3 2V2Z" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M9 8h10M9 13h10m-10 5h7" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+        </div>
+
+        <div class="decision" id="decision" data-state="pending" aria-live="polite" tabindex="-1">
+          <h3 id="verdict">Review pending</h3>
+          <p id="decision-copy">Check the release to see which requirements have evidence.</p>
+        </div>
+
+        <div class="evidence-head">
+          <h3>Evidence checklist</h3>
+          <a id="commit" target="_blank" rel="noopener" hidden></a>
+        </div>
+        <ol id="checks" class="checks"></ol>
+        <div id="escrow" class="escrow-proof" hidden></div>
+
+        <p class="receipt-foot">The client makes the payout decision in ScopePay.</p>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
