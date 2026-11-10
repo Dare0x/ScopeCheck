@@ -19,10 +19,26 @@
 
   <main class="frame">
     <div class="heading">
-      <h1>Check the release<br class="wide-break"> before you pay.</h1>
-      <p>Turn agreed scope into an evidence checklist. Verify the freelancer’s exact GitHub release before you make the payout decision.</p>
+      <h1>Release review</h1>
+      <p>See what the freelancer delivered, what the agreement required, and what needs a closer look before you pay.</p>
     </div>
-    <div class="workspace">
+    <section class="comparison" aria-labelledby="comparison-title">
+      <header class="comparison-head">
+        <div>
+          <h2 id="comparison-title">One milestone, two releases</h2>
+          <p>Publish a GitHub release with <code>gh_2.80.0_checksums.txt</code> attached.</p>
+        </div>
+        <p class="comparison-source">GitHub CLI example<br>Evidence captured 10 Nov 2026</p>
+      </header>
+      <div id="release-comparison" class="release-comparison"></div>
+    </section>
+
+    <details id="review-desk" class="review-desk">
+      <summary>
+        <span>Review a release</span>
+        <span class="desk-hint">Use an example or enter your own scope</span>
+      </summary>
+      <div class="workspace">
       <section class="intake" aria-labelledby="submission-title">
         <div class="section-heading">
           <h2 id="submission-title">Milestone submission</h2>
@@ -85,7 +101,8 @@
 
         <p class="receipt-foot">The client makes the payout decision in ScopePay.</p>
       </section>
-    </div>
+      </div>
+    </details>
   </main>
 </body>
 </html>

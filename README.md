@@ -11,7 +11,7 @@ npm ci
 npm start
 ```
 
-Open http://127.0.0.1:4180 and click **Check release**. The prepared example checks a public GitHub CLI release and its attached checksum file. Switch to **Missing attachment** and check the older release against the same checklist. This walkthrough uses live GitHub evidence and a prepared checklist.
+Open http://127.0.0.1:4180 to compare two GitHub CLI releases against one checklist. The opening comparison uses GitHub evidence captured on 10 November 2026. Select **Inspect receipt** for either release, then click **Check release** to fetch fresh GitHub evidence against the same checklist.
 
 ## Build a checklist with SERV
 

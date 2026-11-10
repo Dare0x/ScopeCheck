@@ -5,12 +5,18 @@ const ui = {
   complete: $('complete-example'), missing: $('missing-example'), error: $('error'), engine: $('serv-status'),
   source: $('plan-source'), decision: $('decision'), verdict: $('verdict'), copy: $('decision-copy'),
   commit: $('commit'), checks: $('checks'), escrow: $('escrow'),
+  comparison: $('release-comparison'), desk: $('review-desk'),
 };
 const exampleRows = [
   { line: 'Publish a GitHub release.', kind: 'release', expected: '' },
   { line: 'Attach gh_2.80.0_checksums.txt to the release.', kind: 'asset', expected: 'gh_2.80.0_checksums.txt' },
 ];
-const examples = { complete: 'v2.80.0', missing: 'v2.79.0' };
+const examples = {
+  missing: { tag: 'v2.79.0', commit: '6b19a854710ff2c81070f109f35434cd20e40115', attachment: false },
+  complete: { tag: 'v2.80.0', commit: 'fdd9e7646b7b8ce1d77f738e412ffc608c2f0545', attachment: true },
+};
+const sampleRepo = 'cli/cli';
+const sampleUrl = tag => 'https://github.com/' + sampleRepo + '/releases/tag/' + tag;
 const checkTypes = { release: 'Published GitHub release', asset: 'Exact release attachment', ci: 'Exact GitHub Actions check', manual: 'Manual review' };
 const statuses = { verified: 'Verified', hold: 'Hold', manual: 'Manual review' };
 const controls = [ui.repository, ui.release, ui.criteria, ui.deal, ui.milestone, ui.complete, ui.missing];
@@ -80,8 +86,8 @@ function renderChecklist() {
 function chooseExample(choice) {
   sample = choice;
   plan = exampleRows;
-  ui.repository.value = 'cli/cli';
-  ui.release.value = 'https://github.com/cli/cli/releases/tag/' + examples[choice];
+  ui.repository.value = sampleRepo;
+  ui.release.value = sampleUrl(examples[choice].tag);
   ui.criteria.value = exampleRows.map(row => row.line).join('\n');
   ui.deal.value = '';
   ui.milestone.value = '1';
@@ -89,6 +95,59 @@ function chooseExample(choice) {
   ui.missing.setAttribute('aria-pressed', String(choice === 'missing'));
   setError();
   renderChecklist();
+}
+
+function savedReceipt({ tag, commit, attachment }) {
+  const source = sampleUrl(tag);
+  const [releaseCheck, assetCheck] = exampleRows;
+  return {
+    verdict: attachment ? 'ready' : 'hold',
+    commit,
+    commitUrl: 'https://github.com/' + sampleRepo + '/commit/' + commit,
+    checks: [
+      { ...releaseCheck, status: 'verified', detail: 'Published release resolves to commit ' + commit.slice(0, 12) + '.', source },
+      { ...assetCheck, status: attachment ? 'verified' : 'hold', source,
+        detail: attachment ? 'The required checksum file is attached to this release.' : 'The required checksum file is missing from this release.' },
+    ],
+  };
+}
+
+function comparisonColumn(choice, example) {
+  const report = savedReceipt(example);
+  const column = node('article', '', 'comparison-column');
+  column.dataset.verdict = report.verdict;
+  const header = node('div', '', 'comparison-release');
+  const heading = node('h3', example.tag);
+  header.append(heading, sourceLink(report.commitUrl, example.commit.slice(0, 8) + ' ↗'));
+  const summary = node('div', '', 'comparison-decision');
+  const verified = report.checks.filter(check => check.status === 'verified').length;
+  summary.append(
+    node('strong', report.verdict === 'ready' ? 'Ready for review' : 'Hold for review'),
+    node('span', verified + ' of ' + report.checks.length + ' verified')
+  );
+  const evidence = node('ul', '', 'comparison-checks');
+  for (const [index, check] of report.checks.entries()) {
+    const item = node('li', '', 'comparison-check');
+    item.dataset.status = check.status;
+    const mark = node('span', check.status === 'verified' ? '✓' : '×', 'comparison-mark');
+    mark.setAttribute('aria-hidden', 'true');
+    const label = index === 0 ? 'Release published' : example.attachment ? 'Checksum file attached' : 'Checksum file missing';
+    item.append(mark, node('span', label));
+    evidence.append(item);
+  }
+  const open = node('button', 'Inspect receipt →', 'receipt-link');
+  open.type = 'button';
+  open.setAttribute('aria-label', 'Inspect ' + example.tag + ' receipt');
+  controls.push(open);
+  open.addEventListener('click', () => {
+    chooseExample(choice);
+    finishReview(report);
+    ui.source.textContent = 'Saved GitHub evidence · 10 Nov 2026';
+    ui.desk.open = true;
+    ui.decision.focus();
+  });
+  column.append(header, summary, evidence, open);
+  return column;
 }
 
 async function request(path, data) {
@@ -191,6 +250,7 @@ ui.form.addEventListener('submit', async event => {
   }
 });
 
+ui.comparison.append(...Object.entries(examples).map(([choice, example]) => comparisonColumn(choice, example)));
 chooseExample('complete');
 try {
   const result = await fetch('/api/status');
