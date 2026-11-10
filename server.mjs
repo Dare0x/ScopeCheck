@@ -2,7 +2,7 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { criteriaLines, githubReader, ReviewError, reviewRelease, validatePlan } from './lib/review.mjs';
 import { planWithServ } from './lib/serv.mjs';
-import { verifyEscrow } from './lib/escrow.mjs';
+import { prepareEscrow } from './lib/escrow.mjs';
 
 const files = new Map([
   ['/', ['index.html', 'text/html; charset=utf-8']],
@@ -14,7 +14,6 @@ const config = {
   key: process.env.SERV_REASONING_API_KEY,
   model: process.env.SERV_MODEL || 'gpt-5.4-mini',
 };
-const github = githubReader();
 const port = Number(process.env.PORT || 4180);
 const common = {
   'X-Content-Type-Options': 'nosniff',
@@ -71,8 +70,8 @@ const server = createServer(async (req, res) => {
     if (req.method === 'POST' && path === '/api/review') {
       const { criteria, rows, repository, releaseUrl, binding } = await body(req);
       const plan = validatePlan(criteriaLines(criteria), rows);
-      const verifyBinding = binding == null ? null : commit => verifyEscrow(binding, releaseUrl, commit);
-      const review = await reviewRelease({ repository, releaseUrl, rows: plan, get: github, verifyBinding });
+      const readBinding = prepareEscrow(binding, releaseUrl);
+      const review = await reviewRelease({ repository, releaseUrl, rows: plan, get: githubReader(), readBinding });
       return json(res, 200, review);
     }
     return json(res, 404, { error: 'Page not found.' });

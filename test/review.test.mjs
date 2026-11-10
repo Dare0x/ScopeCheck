@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { criteriaLines, parseRelease, reviewRelease, validatePlan } from '../lib/review.mjs';
+import { criteriaLines, githubReader, parseRelease, reviewRelease, validatePlan } from '../lib/review.mjs';
 import { planWithServ } from '../lib/serv.mjs';
 
 const sha = 'a'.repeat(40);
@@ -51,7 +51,7 @@ test('missing files, manual criteria and failed escrow binding each block the re
   const variants = [
     { get: evidence({filename: 'wrong.txt'}).get },
     { get: evidence().get, rows: [...rows, { line: 'Looks good on mobile.', kind: 'manual', expected: '' }] },
-    { get: evidence().get, verifyBinding: commit => {
+    { get: evidence().get, readBinding: async () => commit => {
       assert.equal(commit, sha);
       return {status: 'hold', detail: 'Does not match commitment.'};
     } },
@@ -60,6 +60,33 @@ test('missing files, manual criteria and failed escrow binding each block the re
     const result = await reviewRelease({ repository, releaseUrl, rows, ...variant });
     assert.equal(result.verdict, 'hold');
   }
+});
+
+test('starts the escrow read before GitHub resolves the commit', async () => {
+  const { get } = evidence();
+  const { promise, resolve } = Promise.withResolvers();
+  const pending = reviewRelease({
+    repository, releaseUrl, rows,
+    get: async path => {
+      if (path.includes('/git/ref/')) await promise;
+      return get(path);
+    },
+    readBinding: async () => {
+      resolve();
+      return commit => ({ status: commit === sha ? 'verified' : 'hold' });
+    },
+  });
+  assert.equal((await pending).verdict, 'ready');
+});
+
+test('reports a GitHub deadline, rate limit and malformed response separately', async () => {
+  const expired = AbortSignal.abort();
+  const unavailable = githubReader(async () => { throw expired.reason; }, expired);
+  const limited = githubReader(async () => new Response('', { status: 429 }));
+  const malformed = githubReader(async () => new Response('not JSON'));
+  await assert.rejects(() => unavailable('/repos/owner/repo'), { status: 504 });
+  await assert.rejects(() => limited('/repos/owner/repo'), { status: 429 });
+  await assert.rejects(() => malformed('/repos/owner/repo'), { status: 502 });
 });
 
 test('rejects spoofed release links and avoids any fetch on a mismatched repository', async () => {
