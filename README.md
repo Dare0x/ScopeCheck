@@ -1,4 +1,4 @@
-# ScopePay Review
+# ScopeCheck by ScopePay
 
 A reviewer can check the exact software release a freelancer delivered before authorizing an escrow payout. This is a companion to [ScopePay](https://github.com/Dare0x/ScopePay), built for the [SERV Hackathon 02 Open Track](https://www.openserv.ai/hackathon-2).
 
@@ -33,8 +33,16 @@ npm test
 
 The tests cover a commit-specific CI check, missing attachments, mismatched repositories, manual review, and invalid SERV checklists. GitHub and SERV adapters are exercised with controlled responses. The two browser examples make live GitHub requests.
 
+On 11 November 2026, a separate live integration check used SERV's `gpt-5.4-mini` to generate the release-and-attachment checklist. Checking GitHub CLI v2.79.0 returned a hold for the missing `gh_2.80.0_checksums.txt` attachment, while v2.80.0 verified both requirements. The same SERV-to-GitHub workflow also passed through the browser interface. This verification does not cover the optional escrow binding.
+
+GitHub Actions runs the test suite for pushes to `main` and pull requests. These controlled tests do not require API keys or spend SERV credits.
+
 ## Sources
 
 - [SERV Chat Completions](https://docs.openserv.ai/serv-reasoning/api/chat-completions)
 - [GitHub releases](https://docs.github.com/en/rest/releases/releases#get-a-release-by-tag-name), [Git references](https://docs.github.com/en/rest/git/refs#get-a-reference), and [check runs](https://docs.github.com/en/rest/checks/runs#list-check-runs-for-a-git-reference)
 - [ScopePay contract and demo deals](https://github.com/Dare0x/ScopePay)
+
+## Maintainer
+
+Built by Dare Ayodeji with AI-assisted development tools.

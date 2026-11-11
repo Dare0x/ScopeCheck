@@ -49,7 +49,7 @@ async function body(req) {
 const server = createServer(async (req, res) => {
   try {
     if (!["localhost:" + port, "127.0.0.1:" + port].includes(req.headers.host)) {
-      return json(res, 403, { error: 'Open ScopePay Review on localhost.' });
+      return json(res, 403, { error: 'Open ScopeCheck on localhost.' });
     }
     const path = new URL(req.url, 'http://localhost').pathname;
     if (req.method === 'GET' && files.has(path)) {
@@ -83,4 +83,4 @@ const server = createServer(async (req, res) => {
   }
 });
 // An unauthenticated paid inference endpoint is suitable only for this local preview.
-server.listen(port, '127.0.0.1', () => console.log('ScopePay Review · http://127.0.0.1:' + port));
+server.listen(port, '127.0.0.1', () => console.log('ScopeCheck · http://127.0.0.1:' + port));
